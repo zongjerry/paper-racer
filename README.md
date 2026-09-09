@@ -59,20 +59,6 @@ paper-racer/
 - Web Audio API 合成引擎音效。
 - `localStorage` 保存个人最佳成绩；它不是联网排行榜，不会跨设备同步。
 
-## 发布到 GitHub Pages
-
-1. 在 GitHub 创建一个公开仓库，例如 `paper-racer`。
-2. 把 `index.html`、`README.md` 和可选的 `游戏预览.png` 上传到仓库根目录。
-3. 进入仓库的 **Settings → Pages**。
-4. 在 **Build and deployment** 中，将 **Source** 设为 **Deploy from a branch**。
-5. 选择 **main** 分支和 **/ (root)** 目录，点击 **Save**。
-6. 等待部署完成，在 Pages 页面打开 GitHub 提供的访问地址。
-
-一般地址为 `https://你的GitHub用户名.github.io/paper-racer/`，以 Pages 页面实际显示的地址为准。
-
-后续修改游戏，只需更新仓库中的 `index.html` 并提交，GitHub Pages 会重新部署。
-
-## 说明
 
 这是一个轻量的单机街机赛车原型，重点是手绘视觉和简单易玩的驾驶体验，不模拟真实车辆物理，也不包含多人联机。
 
