@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>纸上狂飙 · PAPER CIRCUIT</title>
+<style>
+:root{--ink:#353888;--paper:#f3efdb;--red:#c63b50}*{box-sizing:border-box}body{margin:0;overflow:hidden;background:var(--paper);color:var(--ink);font-family:ui-monospace,'SFMono-Regular','PingFang SC',monospace}canvas{display:block;width:100vw;height:100vh}button{font:inherit;color:inherit;cursor:pointer;background:var(--paper);border:1.5px solid var(--ink);padding:12px 22px;box-shadow:3px 3px 0 #35388822}button:hover{background:#e2dfd3}button:focus-visible{outline:3px solid var(--red);outline-offset:4px}.red{background:var(--red);color:var(--paper);border-color:var(--red)}.red:hover{background:#b73045}.hud{position:fixed;inset:0;pointer-events:none;padding:28px 34px;display:flex;justify-content:space-between;align-items:flex-start}.brand{font-size:12px;letter-spacing:3px}.brand b{display:block;font-size:25px;letter-spacing:-1px;margin-bottom:7px}.stats{text-align:right;display:flex;gap:30px}.stat small{font-size:10px;letter-spacing:2px;display:block;margin-bottom:8px}.stat b{font-size:25px;font-weight:500}.bottom{position:fixed;bottom:25px;left:34px;right:34px;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none}.speed{font-size:64px;font-weight:700;letter-spacing:-5px;line-height:1}.unit{font-size:11px;letter-spacing:2px;margin-top:10px}.meter{width:150px;height:9px;border:1px solid var(--ink);margin-top:12px;padding:2px}.fill{height:100%;background:var(--red);width:100%}.hint{font-size:11px;line-height:1.9;opacity:.7;text-align:right}.overlay{position:fixed;inset:0;display:grid;place-items:center;background:#f3efdb45;backdrop-filter:blur(2px)}.card{width:min(560px,90vw);background:#f6f2e3f5;border:1.5px solid var(--ink);padding:38px 40px;box-shadow:9px 9px 0 #35388820;transform:rotate(-.5deg)}.eyebrow{font-size:11px;letter-spacing:4px;color:var(--red)}h1{font-size:clamp(36px,6vw,60px);line-height:1.06;letter-spacing:-3px;margin:20px 0 12px}h1 span{font-size:17px;letter-spacing:5px;display:block;margin-top:16px}.desc{font-size:13px;line-height:1.9;max-width:400px}.rules{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0;font-size:12px}.rules b{border:1px solid #35388866;padding:3px 6px;display:inline-block;margin-right:7px;min-width:42px;text-align:center}.buttons{display:flex;gap:12px;margin-top:25px}.note{font-size:10px;line-height:1.8;opacity:.6;margin-top:24px}.hidden{display:none!important}#toast{position:fixed;top:20%;width:100%;text-align:center;font-size:26px;font-weight:700;color:var(--red);pointer-events:none;text-shadow:2px 2px var(--paper)}.controls{position:fixed;bottom:100px;left:18px;right:18px;display:none;justify-content:space-between;pointer-events:none}.controls div{display:flex;gap:10px}.controls button{pointer-events:auto;touch-action:none;width:58px;height:56px;padding:0;background:#f3efdbbb;font-size:18px;user-select:none;-webkit-user-select:none}.topButtons{position:fixed;top:107px;right:34px;display:flex;gap:8px}.topButtons button{font-size:10px;padding:7px 10px;background:#f3efdbb0}.map{position:fixed;left:34px;top:105px;font-size:10px;letter-spacing:1px;opacity:.65}@media(pointer:coarse){.controls{display:flex}.hint{display:none}}@media(max-width:600px){.hud{padding:18px}.brand b{font-size:17px}.brand{font-size:9px}.stats{gap:13px}.stat b{font-size:19px}.stat small{font-size:8px}.bottom{left:18px;right:18px}.topButtons{right:18px;top:87px}.map{left:18px;top:87px}.card{padding:26px}.speed{font-size:48px}.rules{gap:10px}}
+</style></head><body>
+<canvas id="game" aria-label="纸上狂飙赛车游戏画面"></canvas>
+<div class="hud"><div class="brand"><b>纸上狂飙 ↗</b>PAPER CIRCUIT / 01</div><div class="stats"><div class="stat"><small>LAP / 圈数</small><b id="lap">1 / 3</b></div><div class="stat"><small>TIME / 用时</small><b id="time">00:00.00</b></div><div class="stat"><small>BEST / 最佳</small><b id="best">—</b></div></div></div>
+<div class="map" id="progress">NOTEBOOK CITY · 手绘城市赛道</div><div class="topButtons"><button id="sound">声音：关</button><button id="pause">暂停 P</button></div>
+<div class="bottom"><div><div class="speed" id="speed">000</div><div class="unit">KM/H &nbsp; / &nbsp; BOOST</div><div class="meter"><div class="fill" id="boost"></div></div></div><div class="hint">↑ 加速 · ↓ 刹车 · ← → 转向<br>SHIFT 氮气 · P 暂停 · R 重新开始<br>避开红色车辆，驶离路面会减速。</div></div>
+<div id="toast"></div>
+<div class="controls"><div><button data-key="arrowleft" aria-label="左转">←</button><button data-key="arrowright" aria-label="右转">→</button></div><div><button data-key="shift" aria-label="氮气">⚡</button><button data-key="arrowdown" aria-label="刹车">刹</button><button data-key="arrowup" aria-label="加速">油</button></div></div>
+<div class="overlay" id="overlay"><section class="card"><div class="eyebrow" id="label">A LITTLE GAME ON A BIG SHEET OF PAPER</div><h1 id="title">在纸上，<br>踩下油门。<span>PAPER CIRCUIT</span></h1><p class="desc" id="description">蓝墨水画的城市，红铅笔涂的赛车。<br>跑完三圈，在弯道和车流之间刷新你的纪录。</p><div class="rules" id="rules"><div><b>↑</b>加速</div><div><b>← →</b>转向</div><div><b>↓</b>刹车</div><div><b>SHIFT</b>氮气加速</div></div><div class="buttons"><button class="red" id="start">开始比赛 →</button><button id="secondary" class="hidden">重新开始</button></div><div class="note">本地运行 · 无需联网 · 无需安装<br>简化街机驾驶 / 手绘伪 3D / 键盘与触屏操作</div></section></div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d');
+const INK='#353888',PAPER='#f3efdb',RED='#c63b50';
+let W=innerWidth,H=innerHeight,dpr=1;function resize(){W=innerWidth;H=innerHeight;dpr=Math.min(devicePixelRatio||1,2);canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
+const SEG=160,ROAD=1700,CAM=900,DRAW=160,MAX=9200,LAPS=3;
+const segments=[];let seed=81;function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
+function section(n,curve){for(let i=0;i<n;i++){let ramp=Math.min(i/18,(n-1-i)/18,1);segments.push({curve:curve*Math.max(0,ramp),i:segments.length})}}
+section(80,0);section(100,1.3);section(60,0);section(100,-1.6);section(55,.3);section(90,1.1);section(60,0);section(90,-1.35);section(85,0);
+const LENGTH=segments.length*SEG;
+const scenery=segments.map((s,i)=>({h:250+rand()*1200,w:260+rand()*420,side:i%2?1:-1,offset:1.35+rand()*.5,kind:i%5}));
+let traffic=[];function makeTraffic(){traffic=[];for(let i=0;i<25;i++)traffic.push({z:5000+i*(LENGTH-6000)/25,x:(i%3-1)*.57,v:MAX*(.31+rand()*.20),color:i%4===0?INK:RED,hit:0})}makeTraffic();
+let mode='menu',pos=0,speed=0,playerX=0,elapsed=0,energy=100,damage=0,lap=1,cooldown=0,boosting=false,toastTime=0,countdown=0,finishTime=0;
+const keys=new Set();let best=0;try{best=Number(localStorage.getItem('paper-circuit-v1-best'))||0}catch(e){}
+function fmt(t){return String(Math.floor(t/60)).padStart(2,'0')+':'+(t%60).toFixed(2).padStart(5,'0')}$('best').textContent=best?fmt(best):'—';
+let audio=null,osc=null,gain=null,audioOn=false;
+function toggleAudio(){try{if(!audio){audio=new(window.AudioContext||window.webkitAudioContext)();osc=audio.createOscillator();gain=audio.createGain();osc.type='sawtooth';gain.gain.value=0;osc.connect(gain);gain.connect(audio.destination);osc.start()}audio.resume();audioOn=!audioOn;$('sound').textContent='声音：'+(audioOn?'开':'关')}catch(e){$('sound').textContent='声音不可用'}}$('sound').onclick=toggleAudio;
+function showOverlay(type){$('overlay').classList.remove('hidden');$('rules').classList.toggle('hidden',type!=='menu');$('secondary').classList.toggle('hidden',type!=='pause');if(type==='pause'){$('label').textContent='PIT STOP / 休息一下';$('title').innerHTML='比赛已暂停。';$('description').textContent='准备好后，回到赛道继续。';$('start').textContent='继续比赛 →'}else if(type==='finish'){$('label').textContent='FINISH LINE / 比赛完成';$('title').innerHTML='三圈，拿下。';$('description').textContent='本次成绩 '+fmt(finishTime)+' · 最佳成绩 '+fmt(best);$('start').textContent='再跑一场 →'}}
+function start(){pos=0;speed=0;playerX=0;elapsed=0;energy=100;damage=0;lap=1;cooldown=0;makeTraffic();keys.clear();mode='countdown';countdown=3;$('overlay').classList.add('hidden');if(audio)audio.resume()}
+$('start').onclick=()=>{if(mode==='pause'){mode='race';$('overlay').classList.add('hidden')}else start()};$('secondary').onclick=start;
+function pause(){keys.clear();if(mode==='race'){mode='pause';showOverlay('pause')}else if(mode==='pause'){mode='race';$('overlay').classList.add('hidden')}}$('pause').onclick=pause;
+addEventListener('keydown',e=>{let k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' ','shift'].includes(k))e.preventDefault();if(!e.repeat){if(k==='p'||k==='escape')pause();if(k==='r'&&mode!=='menu')start();if(k==='enter'&&(mode==='menu'||mode==='finish'))start()}keys.add(k)});
+addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',()=>{keys.clear();if(mode==='race')pause()});document.addEventListener('visibilitychange',()=>{if(document.hidden){keys.clear();if(mode==='race')pause()}});
+document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();keys.add(k);b.setPointerCapture(e.pointerId)});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>keys.delete(k)))});
+function notify(text){$('toast').textContent=text;toastTime=1.5}
+function update(dt){
+ if(mode==='countdown'){countdown-=dt;$('toast').textContent=countdown>0?Math.ceil(countdown):'GO!';if(countdown<=0){mode='race';toastTime=.7}return}
+ if(mode!=='race'){if(gain)gain.gain.setTargetAtTime(0,audio.currentTime,.08);return}
+ elapsed+=dt;cooldown=Math.max(0,cooldown-dt);damage=Math.max(0,damage-dt*2);if(toastTime>0){toastTime-=dt;if(toastTime<=0)$('toast').textContent=''}
+ let throttle=keys.has('arrowup'),brake=keys.has('arrowdown'),turn=(keys.has('arrowright')?1:0)-(keys.has('arrowleft')?1:0);
+ boosting=keys.has('shift')&&energy>1&&throttle&&!brake;
+ if(boosting)energy=Math.max(0,energy-dt*29);else energy=Math.min(100,energy+dt*10);
+ const cap=boosting?MAX*1.28:MAX;
+ speed+=dt*(brake?-MAX*1.2:throttle?MAX*.38:-MAX*.20);speed=Math.max(0,Math.min(speed,cap));
+ const curve=segments[Math.floor((pos%LENGTH)/SEG)].curve;
+ playerX+=turn*dt*(.35+speed/MAX*1.35)-curve*dt*(speed/MAX)**2*.36;
+ if(Math.abs(playerX)>1.03&&speed>MAX*.30){speed=Math.max(MAX*.30,speed-dt*MAX*.85)}
+ playerX=Math.max(-1.85,Math.min(1.85,playerX));const oldPos=pos;pos+=speed*dt;
+ for(const c of traffic){const oldZ=c.z;c.z=(c.z+c.v*dt)%LENGTH;c.hit=Math.max(0,c.hit-dt);const dist=(oldZ-(oldPos%LENGTH+CAM)+LENGTH)%LENGTH;const relativeTravel=(speed-c.v)*dt;if(cooldown===0&&Math.abs(c.x-playerX)<.24&&(dist<230||relativeTravel>0&&dist<relativeTravel+230)){speed*=.43;cooldown=1.1;damage=.65;c.hit=1;notify('擦碰！稳住方向')}}
+ let nextLap=Math.floor(pos/LENGTH)+1;if(nextLap>lap){lap=nextLap;if(lap>LAPS){finishTime=elapsed;mode='finish';speed=0;if(!best||elapsed<best){best=elapsed;try{localStorage.setItem('paper-circuit-v1-best',String(best))}catch(e){}}$('best').textContent=fmt(best);showOverlay('finish')}else notify('第 '+lap+' 圈 / '+LAPS)}
+ if(gain){osc.frequency.setTargetAtTime(40+speed/MAX*120+(boosting?35:0),audio.currentTime,.1);gain.gain.setTargetAtTime(audioOn?.018:0,audio.currentTime,.06)}
+}
+function poly(points,fill,stroke=INK,width=1){ctx.beginPath();ctx.moveTo(...points[0]);for(let i=1;i<points.length;i++)ctx.lineTo(...points[i]);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke()}}
+function line(x1,y1,x2,y2,col=INK,width=1){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=col;ctx.lineWidth=width;ctx.stroke()}
+function project(x,z){const scale=.83/z;return {x:W*.5+scale*(x-playerX*ROAD)*W*.5,y:H*.43+scale*CAM*H*.5,w:scale*ROAD*W*.5,scale}}
+function skyline(){ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.globalAlpha=.16;for(let y=20;y<H;y+=26)line(0,y,W,y,INK,.7);line(W*.085,0,W*.085,H,RED,.9);ctx.globalAlpha=1;
+ ctx.save();ctx.translate(-playerX*8,0);ctx.strokeStyle=INK;ctx.lineWidth=.8;ctx.globalAlpha=.28;
+ for(let i=0;i<28;i++){let x=i*W/24-W*.08,h=25+(Math.sin(i*13.8)*.5+.5)*70,y=H*.43-h;ctx.strokeRect(x,y,W/32,h);for(let k=1;k<4;k++)line(x,y+k*h/4,x+W/32,y+k*h/4,INK,.6)}ctx.restore();
+ ctx.save();ctx.translate(W*.79,H*.22);ctx.rotate(.08);ctx.globalAlpha=.45;ctx.beginPath();ctx.arc(0,0,18,0,Math.PI*2);ctx.strokeStyle=INK;ctx.stroke();for(let i=0;i<12;i++){let a=i*Math.PI/6;line(Math.cos(a)*24,Math.sin(a)*24,Math.cos(a)*29,Math.sin(a)*29,INK,.8)}ctx.restore();
+}
+function building(p,sc,index){let side=sc.side,x=p.x+p.w*sc.offset*side,bw=p.scale*sc.w*W*.5,bh=p.scale*sc.h*H*.5,y=p.y;if(bh<4||bw>W*1.7)return;let depth=bw*.35*side;
+ poly([[x,y],[x,y-bh],[x+side*bw,y-bh],[x+side*bw,y]],PAPER,INK,.85);
+ poly([[x+side*bw,y],[x+side*bw,y-bh],[x+side*bw+depth,y-bh-bw*.18],[x+side*bw+depth,y-bw*.18]],'#dcdceb',INK,.8);
+ poly([[x,y-bh],[x+side*bw,y-bh],[x+side*bw+depth,y-bh-bw*.18],[x+depth,y-bh-bw*.18]],PAPER,INK,.8);
+ for(let k=1;k<5;k++)line(x,y-bh*k/5,x+side*bw,y-bh*k/5,INK,.6);
+ for(let k=1;k<3;k++)line(x+side*bw*k/3,y,x+side*bw*k/3,y-bh,INK,.6);
+ for(let k=0;k<7;k++){let fy=y-bh*k/7;line(x+side*bw,fy,x+side*bw+depth,fy-bw*.18,INK,.4)}
+ if(bw>22&&index%6===0){ctx.save();ctx.fillStyle=INK;ctx.font=Math.max(7,Math.min(15,bw*.16))+'px monospace';ctx.fillText(index%12?'PIT':'01',Math.min(x,x+side*bw)+bw*.12,y-bh*.73);ctx.restore()}
+}
+function car(x,y,size,color,own=false){ctx.save();ctx.translate(x,y);if(own){ctx.rotate(((keys.has('arrowleft')?-.04:0)+(keys.has('arrowright')?.04:0))*(speed/MAX));if(damage>0)ctx.translate(Math.sin(elapsed*70)*damage*10,0)}
+ const w=size,h=size*.64;ctx.fillStyle='#35388818';ctx.beginPath();ctx.ellipse(0,3,w*.68,h*.19,0,0,Math.PI*2);ctx.fill();
+ poly([[-w*.59,0],[-w*.59,-h*.28],[-w*.48,-h*.32],[-w*.47,1]],INK,INK);poly([[w*.47,1],[w*.48,-h*.32],[w*.59,-h*.28],[w*.59,0]],INK,INK);
+ poly([[-w*.55,-h*.05],[-w*.54,-h*.48],[-w*.34,-h*.85],[w*.32,-h*.85],[w*.54,-h*.48],[w*.55,-h*.05]],PAPER,color,2);
+ poly([[-w*.34,-h*.82],[-w*.25,-h*1.02],[w*.24,-h*1.02],[w*.32,-h*.82]],PAPER,color,1.7);
+ poly([[-w*.34,-h*.79],[-w*.43,-h*.49],[w*.42,-h*.49],[w*.32,-h*.79]],'#d7d8e7',color,1.4);
+ line(0,-h*.78,0,-h*.50,color,1);poly([[-w*.52,-h*.42],[w*.52,-h*.42],[w*.55,-h*.10],[-w*.55,-h*.10]],color,color);
+ for(let i=-2;i<=2;i++)line(i*w*.15,-h*.38,i*w*.15+w*.05,-h*.16,PAPER,.7);
+ line(-w*.48,-h*.02,w*.48,-h*.02,color,2);line(-w*.47,-h*.31,-w*.31,-h*.31,PAPER,3);line(w*.31,-h*.31,w*.47,-h*.31,PAPER,3);
+ if(own&&boosting){for(let side of [-1,1])poly([[side*w*.27,-h*.01],[side*w*.20,h*.35+Math.random()*h*.25],[side*w*.13,-h*.01]],RED,null)}ctx.restore()}
+function render(){skyline();const base=Math.floor((pos%LENGTH)/SEG),frac=(pos%SEG)/SEG;let x=0,dx=-segments[base].curve*frac*2.5,pts=[];
+ for(let n=0;n<DRAW;n++){let i=(base+n)%segments.length,z=(n-frac)*SEG;if(z>70)pts.push({p:project(x,z),i,n,z});x+=dx;dx+=segments[i].curve*2.5}
+ for(let k=pts.length-1;k>0;k--){let far=pts[k],near=pts[k-1],a=near.p,b=far.p;if(a.y>H*2||b.y>H)continue;
+  poly([[a.x-a.w,a.y],[b.x-b.w,b.y],[b.x+b.w,b.y],[a.x+a.w,a.y]],far.i%2?'#f4f0df':'#eeeada',null);
+  line(a.x-a.w,a.y,b.x-b.w,b.y,INK,1.3);line(a.x+a.w,a.y,b.x+b.w,b.y,INK,1.3);
+  for(let side of [-1,1]){poly([[a.x+a.w*side,a.y],[b.x+b.w*side,b.y],[b.x+b.w*side*1.055,b.y],[a.x+a.w*side*1.055,a.y]],Math.floor(far.i/3)%2?PAPER:INK,INK,.4)}
+  if(far.i%7<3)for(let side of [-1,1])line(a.x+a.w*side/3,a.y,b.x+b.w*side/3,b.y,INK,Math.max(.6,a.w*.003));
+  if(far.i<2){for(let t=0;t<12;t++)poly([[b.x-b.w+t*b.w/6,b.y],[b.x-b.w+(t+1)*b.w/6,b.y],[a.x-a.w+(t+1)*a.w/6,a.y],[a.x-a.w+t*a.w/6,a.y]],t%2?INK:PAPER,INK,.3)}
+  if(far.i%9===0)building(b,scenery[far.i],far.i);
+  if(far.i%12===0){let sign=segments[(far.i+15)%segments.length].curve;if(Math.abs(sign)>.5){let sx=b.x+b.w*1.15,sz=Math.min(38,b.w*.12);line(sx,b.y,sx,b.y-sz*1.8,INK,1);poly([[sx-sz*.5,b.y-sz*2.2],[sx+sz*.5,b.y-sz*2.2],[sx+sz*.5,b.y-sz*1.4],[sx-sz*.5,b.y-sz*1.4]],PAPER,RED,1);ctx.fillStyle=RED;ctx.font=sz*.6+'px monospace';ctx.fillText(sign>0?'›':'‹',sx-sz*.18,b.y-sz*1.6)}}
+  for(const c of traffic){let dist=(c.z-pos%LENGTH+LENGTH)%LENGTH;if(dist>=near.z&&dist<far.z){let ratio=(dist-near.z)/(far.z-near.z),p={x:a.x+(b.x-a.x)*ratio,y:a.y+(b.y-a.y)*ratio,w:a.w+(b.w-a.w)*ratio};if(p.y<H*.95)car(p.x+c.x*p.w,p.y,Math.max(2,p.w*.18),c.color)}}
+ }
+ car(W*.5,H*.865,Math.min(W*.19,H*.24),RED,true);
+ if(boosting){ctx.globalAlpha=.5;for(let i=0;i<9;i++){let y=H*.48+(i/9)*H*.48,off=W*(.20+.25*i/9);line(W*.5-off,y,W*.5-off-25,y+12,INK,.7);line(W*.5+off,y,W*.5+off+25,y+12,INK,.7)}ctx.globalAlpha=1}
+ $('speed').textContent=String(Math.round(speed/MAX*220)).padStart(3,'0');$('lap').textContent=Math.min(lap,LAPS)+' / '+LAPS;$('time').textContent=fmt(elapsed);$('boost').style.width=energy+'%';$('progress').textContent='NOTEBOOK CITY · 本圈 '+Math.floor((pos%LENGTH)/LENGTH*100)+'%';
+}
+let last=performance.now();function frame(now){let dt=Math.min(.05,(now-last)/1000);last=now;update(dt);render();requestAnimationFrame(frame)}requestAnimationFrame(frame);
+// A read-only state hook for smoke checks; gameplay has no network or dependencies.
+window.paperRacer={getState:()=>({mode,pos,speed,lap,energy,elapsed,trackLength:LENGTH,traffic:traffic.length})};
+</script></body></html>
